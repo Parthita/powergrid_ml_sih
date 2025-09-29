@@ -3,9 +3,8 @@
 
 **Hackathon Report**
 
-**Team:** The Transformers
+**Team:** Thinkers
 
-**Date:** September 29, 2025
 
 ---
 
