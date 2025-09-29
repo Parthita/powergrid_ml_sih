@@ -1,58 +1,33 @@
-# PowerGrid Analytics Dashboard
+# ⚡ PowerGrid Analytics Dashboard ⚡
 
 An end-to-end application to forecast cost and timeline overruns for power infrastructure projects and visualize risks in a modern, interactive dashboard.
 
-## Architecture
+---
 
-The project is divided into a frontend and a backend:
+## ✨ Features
 
-- **Frontend**: A React application built with Vite, responsible for the user interface and data visualization. It is deployed on Vercel.
-- **Backend**: A Python FastAPI application that serves the machine learning models for prediction. It is deployed on Railway.
+-   **AI-Powered Predictions**: Utilizes XGBoost models to predict project cost and timeline overruns with high accuracy.
+-   **Interactive Dashboard**: A sleek and responsive user interface built with React for a seamless user experience.
+-   **Dynamic Visualizations**: Leverages Recharts to provide a rich set of charts and graphs for in-depth analysis.
+-   **Simple Data Input**: Users can upload their own project data in CSV format to get instant predictions and insights.
 
-Here is a diagram of the architecture:
+## 🛠️ Technology Stack
 
-```mermaid
-graph TD
-    A[User] --> B{Frontend (Vercel)};
-    B --> C{Backend (Railway)};
-    C --> D[ML Models];
-    C --> B;
-```
+-   **Frontend**: React, Vite, Recharts
+-   **Backend**: Python, FastAPI, Pandas, Scikit-learn, XGBoost
+-   **Deployment**: Vercel (Frontend), Railway (Backend)
 
-## Features
+## 🚀 Getting Started
 
-- **AI-Powered Predictions**: Utilizes XGBoost models to predict project cost and timeline overruns.
-- **Interactive Dashboard**: A sleek and responsive user interface built with React and Recharts for data visualization.
-- **CSV Upload**: Users can upload their own project data in CSV format to get instant predictions and insights.
-- **Rich Visualizations**: The dashboard includes a variety of charts to analyze the results from different perspectives.
-
-## Dashboard Visualizations
-
-The dashboard provides the following visualizations:
-
-- **Key Metrics**: A summary of key statistics like total projects, average cost, average timeline, and the number of high-risk projects.
-- **Cost and Timeline Trends**: Line charts showing the predicted cost and timeline for each project.
-- **Risk Distribution**: A pie chart showing the distribution of projects by risk level (Low, Medium, High).
-- **Cost vs. Timeline**: A scatter plot to visualize the relationship between predicted cost and timeline.
-- **Overrun Series**: Line charts showing the cost and timeline overrun percentages for each project.
-- **Breakdowns by Project Type and Terrain**: Charts showing average cost, timeline, and overruns grouped by project type and terrain.
-- **Project Details**: A detailed table view of all projects with their predictions and risk assessments.
-
-## Technology Stack
-
-- **Frontend**: React, Vite, Recharts, PapaParse
-- **Backend**: FastAPI, Python, Pandas, Scikit-learn, XGBoost
-- **Deployment**: Vercel (Frontend), Railway (Backend)
-
-## Getting Started
+Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
 
 ### Prerequisites
 
-- Git
-- Node.js and npm
-- Python 3.8+ and pip
+-   Git
+-   Node.js and npm
+-   Python 3.8+ and pip
 
-### Setup
+### Local Setup
 
 1.  **Clone the repository:**
     ```bash
@@ -64,9 +39,8 @@ The dashboard provides the following visualizations:
     ```bash
     cd backend
     pip install -r requirements.txt
-    # To train the models (optional, pre-trained models are included)
+    # The models are pre-trained, but you can retrain them by running:
     # python train_overrun.py
-    # To start the backend server
     uvicorn api:app --host 0.0.0.0 --port 8000
     ```
 
@@ -76,21 +50,24 @@ The dashboard provides the following visualizations:
     npm install
     npm run dev
     ```
-    The frontend will be available at `http://localhost:5173`.
 
-## Deployment
+    The frontend will be available at `http://localhost:5173` and will connect to the local backend server running on port 8000.
+
+## ☁️ Deployment
+
+The application is designed for a decoupled deployment on modern cloud platforms.
 
 ### Backend (Railway)
 
-1.  Push the code to a GitHub repository.
-2.  Create a new project on Railway and connect it to your GitHub repository.
-3.  When adding a service, specify `backend` as the root directory if prompted.
-4.  Railway will use the `Procfile` to start the application and provide a public URL.
+1.  Push your code to a GitHub repository.
+2.  Create a new project on Railway and connect it to your repository.
+3.  If prompted, set the service's root directory to `/backend`.
+4.  Railway will use the `Procfile` to deploy the API and provide a public URL.
 
 ### Frontend (Vercel)
 
-1.  Update the backend URL in `frontend/src/App.jsx` to the URL provided by Railway.
-2.  Push the code to your GitHub repository.
-3.  Create a new project on Vercel and connect it to your GitHub repository.
-4.  Set the root directory to `frontend` in the Vercel project settings.
-5.  Vercel will build and deploy your frontend.
+1.  In `frontend/src/App.jsx`, update the `fetch` URL to point to your deployed Railway backend URL.
+2.  Push the changes to your GitHub repository.
+3.  Create a new project on Vercel and connect it to the same repository.
+4.  Set the project's root directory to `/frontend` in the Vercel settings.
+5.  Vercel will build and deploy your frontend application.
