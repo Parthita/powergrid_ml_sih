@@ -1,0 +1,137 @@
+PowerGrid ML – Full Project Explanation (for PPT)
+
+1) Problem and Goal
+- Context: POWERGRID executes many large infrastructure projects where delays and cost escalations can harm national objectives.
+- Goal: Predict cost and timeline overruns early and identify hotspots/drivers so stakeholders can mitigate risk proactively.
+
+2) High-level Solution
+- Data-in: A project CSV with planning estimates and contextual factors (project type, terrain, vendor, regulatory, materials, weather, resources, hindrances).
+- ML Core: Models predict cost and timeline overrun percentages (relative to the plan). Predicted cost and timeline are reconstructed from the plan and predicted overrun.
+- Outputs: Predicted_Cost, Predicted_Timeline, Cost_Overrun_Pct, Timeline_Overrun_Pct, and an Overall_Risk label.
+- Experience: A lightweight React dashboard. Users upload raw CSV; a FastAPI endpoint returns predictions for visualization.
+
+3) System Architecture
+- Backend (Python)
+  - train_overrun.py: Generates synthetic training data (3600+ rows), engineers features, and trains XGBoost models to predict overruns.
+  - feature_engineering.py: One-hot encodings, interaction features, and domain composites (e.g., material shortage, permit volatility).
+  - predict.py: CLI tool to score CSVs offline (useful for batch testing or export flows).
+  - api.py: FastAPI service exposing /predict for CSV uploads. Returns predictions as JSON rows.
+  - schema.py: Validates and gently standardizes input CSV (required columns checked; numeric coercion).
+  - generate_test_csvs.py: Produces 10 diverse “user-style” CSVs (varied project counts and cost scales) to demo end-to-end.
+- Frontend (React, Vite)
+  - Upload a raw CSV → calls /predict → renders charts and tables (trends, risk distribution, scatter, overruns, and comparisons vs plan).
+  - One-time intro section explaining required columns and chart meanings (dismissible; saved in localStorage).
+
+4) Data Model (Columns the user can provide)
+- Identifiers & categories
+  - ProjectID, ProjectType (Substation/Overhead Line/Underground Cable), Terrain, WeatherImpact, DemandSupply, Vendor
+- Planning baselines (recommended)
+  - EstimatedCost (₹ lakhs), EstimatedTimeline (months)
+- Drivers (improve accuracy)
+  - Resources, ProjectLength, RegulatoryTime, HistoricalDelay, StartMonth
+  - VendorOnTimeRate, VendorAvgDelay
+  - RegulatoryPermitDays, PermitVariance
+  - WeatherSeverityIndex, MaterialAvailabilityIndex, ResourceUtilization
+  - HindranceCounts, HindranceRecentDays, MaterialCost, LabourCost
+- Fallbacks
+  - If EstimatedCost/EstimatedTimeline are missing, TotalCost/Timeline (when present) are used to compute overruns.
+
+5) Synthetic Training Data (how we created data for training)
+- Size: ~3600 rows to simulate many projects with realistic variation.
+- Seasonality: StartMonth influences planned estimates (mild seasonality factors).
+- Execution Slippage: Actuals exceed estimates based on:
+  - Regulatory variance (PermitVariance), vendor performance (VendorOnTimeRate, VendorAvgDelay), weather severity, material availability, hindrances, and resource utilization gaps.
+- Multipliers: Adjustments by ProjectType, Terrain, and WeatherImpact.
+- Targets: CostOverrunPct and TimelineOverrunPct computed from Actual vs Estimated.
+- Risk: Overall_Risk derived from combined absolute overrun percentages (Low/Medium/High thresholds).
+
+6) Feature Engineering
+- Categorical one-hot encoding: ProjectType, Terrain, WeatherImpact, DemandSupply, Vendor, Season, interactions such as Type_x_Terrain and Season_x_Terrain.
+- Estimate-based features: ratios and deltas (e.g., EstCost_to_TotalCost_Ratio, EstTimeline_Delta).
+- Domain composites and non-linearities: MaterialShortage (1 - MaterialAvailabilityIndex), UtilizationGap (1 - ResourceUtilization), and squares; PermitVolatilityIndex (PermitVariance/PermitDays); Delay_x_Hindrance.
+- Numeric-only model matrix: non-numeric columns are encoded, then numeric features are passed to XGBoost without scaling at inference.
+
+7) Modeling Approach
+- Why predict overruns (percentage):
+  - Stabilizes learning across cost scales and timelines.
+  - Aligns with how risk is communicated to management (percent overrun).
+- Models: XGBoost regression for CostOverrunPct and TimelineOverrunPct.
+- Predicted values reconstruction: 
+  - Predicted_Cost = EstimatedCost × (1 + CostOverrunPct/100)
+  - Predicted_Timeline = EstimatedTimeline × (1 + TimelineOverrunPct/100)
+- Risk label: Overall_Risk derived from average of absolute overruns (Low < 10%, Medium < 30%, else High).
+
+8) Current Training Results (from latest run on synthetic data)
+- Feature shape: ~112 engineered features.
+- CostOverrunPct (chosen): R² ≈ 0.726, MAE ≈ 1.80 percentage points
+- TimelineOverrunPct (chosen): R² ≈ 0.786, MAE ≈ 6.67 percentage points
+- Notes:
+  - Scores are on held-out synthetic data. Real-world accuracy will depend on data coverage and quality.
+  - We disabled XGBoost early stopping for broad version compatibility and used a small hyperparameter sweep.
+
+9) Serving and Workflow
+- API endpoint: POST /predict
+  - Input: CSV file upload
+  - Output: JSON with rows including Predicted_Cost, Predicted_Timeline, Cost_Overrun_Pct, Timeline_Overrun_Pct, Overall_Risk
+- React dashboard flow:
+  - User uploads raw CSV (no predicted columns). Frontend calls API.
+  - Dashboard renders:
+    - Summary metrics: totals, averages, overruns, and comparisons vs plan.
+    - Risk distribution pie, cost vs timeline scatter.
+    - Trend lines for cost and timeline; overrun series.
+    - Breakdown by ProjectType and by Terrain; detailed table with estimates vs predictions.
+- Offline option: predict.py can augment CSVs locally (no server) for testing or batch export.
+
+10) Demo Instructions (end-to-end)
+- Train models (one-time):
+  - python train_overrun.py
+- Start backend API:
+  - uvicorn api:app --host 0.0.0.0 --port 8000
+- Start React dashboard:
+  - cd dashboard && npm install && npm run dev
+- Prepare test CSVs (optional):
+  - python generate_test_csvs.py
+- Upload any generated raw CSV (e.g., test_csvs/dummy_variant_1.csv) to the dashboard. It will call the API and display predictions.
+
+11) What to highlight in PPT
+- Problem framing: why overruns matter; need for early detection and explainability.
+- Approach:
+  - Predict overrun percentages; reconstruct predicted cost and time from plan + overrun.
+  - Diverse domain features: vendor, regulatory, weather, materials, demand-supply, resources, hindrances.
+  - Interaction features and engineered signals (e.g., permit volatility, material shortage).
+- Results and business value:
+  - Risk classification and hotspot indicators.
+  - Comparisons vs user plan to justify decision-making.
+- Architecture & UX:
+  - Lightweight API, simple CSV workflow, modern dashboard visuals.
+- Extensibility:
+  - Integrate vendor and hindrance text via embeddings.
+  - SHAP “Top Factors” export for per-project explanations in UI.
+  - Calibrated risk classifier and probability overlays.
+  - Time-aware validation and cross-validation bagging for robustness.
+
+12) Limitations and Next Steps
+- Synthetic training approximates real patterns but is not a substitute for real historical data.
+- Accuracy and reliability improve with real vendor KPIs, regulatory milestones, weather histories, and material lead-time data.
+- Add explainability exports (SHAP) and a “Top Factors” panel in React.
+- Add governance: versioned feature specs, strict schema vocabularies, and leakage checks.
+
+13) File Map (concise)
+- api.py: FastAPI /predict
+- train_overrun.py: synthetic data + training
+- feature_engineering.py: domain features and interactions
+- schema.py: CSV validation/coercion
+- predict.py: offline CLI scoring
+- generate_test_csvs.py: create 10 diverse raw CSVs
+- dashboard/: React UI (upload, charts, comparisons)
+- best_models.pkl: trained models (created after training)
+
+14) Requirements (key Python packages)
+- pandas, numpy, scikit-learn, xgboost, joblib, fastapi, uvicorn
+
+15) One-slide Executive Summary (suggested PPT content)
+- Objective: Predict cost and timeline overruns and expose hotspots.
+- Method: Overrun-percentage models using domain features; API + dashboard.
+- Current performance (synthetic): Cost R² ~0.73 MAE ~1.8pp; Timeline R² ~0.79 MAE ~6.7pp.
+- Impact: Early risk signals, explainable drivers, easy CSV workflow for non-technical users.
+- Next: Add SHAP explanations, probability-calibrated risk, and real data onboarding.
