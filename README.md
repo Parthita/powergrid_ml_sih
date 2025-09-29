@@ -44,6 +44,38 @@ The core of the platform is a set of supervised learning models trained to predi
     -   **Cost Overrun Prediction R²**: > 0.99
     -   **Timeline Overrun Prediction R²**: > 0.80
 
+## Input Data Format
+
+The model expects a CSV file with the following columns:
+
+### Required Columns:
+- `ProjectID`: Unique project identifier
+- `ProjectType`: Substation, Overhead Line, or Underground Cable
+- `Terrain`: Plains, Hills, Forest, Urban, or Coastal
+- `WeatherImpact`: Low, Medium, or High
+- `DemandSupply`: Stable, Fluctuating, or High Demand
+- `EstimatedCost`: Planned/estimated cost in ₹ lakhs
+- `EstimatedTimeline`: Planned/estimated timeline in months
+
+### Optional Columns:
+- `Vendor`: The supplier for the project.
+- `Resources`: The number of resources allocated.
+- `ProjectLength`: The length of the project (e.g., cable length).
+- `RegulatoryTime`: Time spent in regulatory processes.
+- `HistoricalDelay`: Delays in similar past projects.
+- `StartMonth`: The month the project is scheduled to start.
+- `VendorOnTimeRate`: The vendor's historical on-time delivery rate.
+- `VendorAvgDelay`: The vendor's average delay in past projects.
+- `RegulatoryPermitDays`: The time taken to acquire regulatory permits.
+- `PermitVariance`: The variance in permit acquisition time.
+- `WeatherSeverityIndex`: An index representing the severity of expected weather.
+- `MaterialAvailabilityIndex`: An index for the availability of required materials.
+- `ResourceUtilization`: The efficiency of resource utilization.
+- `HindranceCounts`: The number of hindrances encountered.
+- `HindranceRecentDays`: The number of days with recent hindrances.
+- `MaterialCost`: The cost of materials.
+- `LabourCost`: The cost of labour.
+
 ## Technology Stack
 
 -   **Frontend**: React, Vite, Recharts
