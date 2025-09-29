@@ -34,9 +34,9 @@ The application is designed with a decoupled frontend and backend, which allows 
 
 ```mermaid
 graph TD
-    A[User] -->|Uploads CSV| B{Frontend (React on Vercel)};
-    B -->|Sends data to API| C{Backend (FastAPI on Railway)};
-    C -->|Loads model| D[ML Model (XGBoost)];
+    A[User] -->|Uploads CSV| B{"Frontend (React on Vercel)"};
+    B -->|Sends data to API| C{"Backend (FastAPI on Railway)"};
+    C -->|Loads model| D["ML Model (XGBoost)"];
     C -->|Returns predictions| B;
     B -->|Displays charts| A;
 ```
@@ -54,12 +54,12 @@ To enhance the model's predictive power, we engineered a variety of features fro
 
 ```mermaid
 graph TD
-    A[Raw Project Data] --> B{Feature Engineering Pipeline};
-    B --> C[Interaction Features (e.g., Type x Terrain)];
-    B --> D[Ratio Features (e.g., EstCost / TotalCost)];
-    B --> E[Risk Indicators (e.g., VendorDelayRisk)];
-    B --> F[One-Hot Encoding of Categorical Data];
-    C --> G{Model-Ready Feature Set};
+    A["Raw Project Data"] --> B{"Feature Engineering Pipeline"};
+    B --> C["Interaction Features (e.g., Type x Terrain)"];
+    B --> D["Ratio Features (e.g., EstCost / TotalCost)"];
+    B --> E["Risk Indicators (e.g., VendorDelayRisk)"];
+    B --> F["One-Hot Encoding of Categorical Data"];
+    C --> G{"Model-Ready Feature Set"};
     D --> G;
     E --> G;
     F --> G;
@@ -77,21 +77,21 @@ The models were trained on a synthetically generated dataset of 3600 projects, d
 ```mermaid
 graph TD
     subgraph Training Phase
-        A[Historical Project Data] --> B{Feature Engineering};
-        B --> C{Train/Test Split};
-        C --> D[Train XGBoost Models];
-        D --> E(cost_overrun_model.pkl);
-        D --> F(timeline_overrun_model.pkl);
+        A["Historical Project Data"] --> B{"Feature Engineering"};
+        B --> C{"Train/Test Split"};
+        C --> D["Train XGBoost Models"];
+        D --> E["cost_overrun_model.pkl"];
+        D --> F["timeline_overrun_model.pkl"];
     end
 
     subgraph Prediction Phase
-        G[New Project CSV] --> H{API Endpoint /predict};
-        H --> I{Feature Engineering};
-        E --> J{Load Models};
+        G["New Project CSV"] --> H{"API Endpoint /predict"};
+        H --> I{"Feature Engineering"};
+        E --> J{"Load Models"};
         F --> J;
-        I --> K[Apply Models];
+        I --> K["Apply Models"];
         J --> K;
-        K --> L[Return Predicted Overruns];
+        K --> L["Return Predicted Overruns"];
     end
 ```
 
